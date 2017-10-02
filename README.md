@@ -12,7 +12,7 @@ Wraps the main fuction in a tornado server in a post request. User sends the ser
 
 
 
-Docker file also avalible because why note 
+Docker file also avalible because why not
 
 
 
