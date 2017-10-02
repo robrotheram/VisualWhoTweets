@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css"/>
+      <style type="text/css">
+  h2 {
+    margin: 2em 0em;
+  }
+  .ui.container {
+    padding-top: 5em;
+    padding-bottom: 5em;
+  }
+
+
+
+  </style>
+</head>
+<body>
+
+<div class="ui container">
+    <h1 class="ui dividing header" style="text-align: center">Visual PyWho</h1>
+  <div class="ui two column grid">
+    <div class="ten wide column">
+        <div class="top attached ui segment">
+        <canvas id="myChart" width="400" height="400"></canvas>
+      </div>
+
+    </div>
+    <div class="six wide column">
+      <div class="top attached ui segment">
+        <h3 class="ui dividing header">Twitter API keys</h3>
+
+          <form class="ui form attached fluid segment">
+              <div class="field">
+                <div class="ui labeled input">
+                  <a class="ui label" style="width: 160px; text-align: right">
+                    Consumer Key:
+                  </a>
+                  <input type="text" id="consumer_key" placeholder="...">
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui labeled input">
+                  <a class="ui label" style="width: 160px; text-align: right">
+                    Consumer Secret:
+                  </a>
+                  <input type="password" id="consumer_secret" placeholder="...">
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui labeled input">
+                  <a class="ui label" style="width: 160px; text-align: right">
+                    Access Token:
+                  </a>
+                  <input type="text" id="access_token" placeholder="...">
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui labeled input">
+                  <a class="ui label"  style="width: 160px; text-align: right">
+                    Access Token Secret:
+                  </a>
+                  <input type="password" id="access_token_secret" placeholder="...">
+                </div>
+              </div>
+
+              <button class="ui fluid button primary right" type="submit">Submit</button>
+            </form>
+          <div class="ui bottom attached warning message">
+  <i class="icon help"></i>
+ Note we do not store any data see the code <a href="github.com">here</a>
+</div>
+
+  <div class="ui negative message hidden" id="errorMSG" >
+  <i class="close icon"></i>
+  <div class="header">
+    We're sorry you entered incorrect details or you hit the API Rate Limit
+  </div>
+  </div>
+    </div>
+
+      </div>
+
+
+  </div>
+</div>
+
+
+
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>
+<script>
+ var ctx = document.getElementById("myChart").getContext('2d');
+ var myChart = new Chart(ctx, {
+    type: 'horizontalBar',
+    options: {
+        legend: {
+            display: false
+         },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+function dataToChart(d) {
+    console.log(d);
+    var _labels = [];
+    var numOfTweets=[];
+    var colors=[];
+    d.forEach(function(entry) {
+        console.log(entry);
+        _labels.push(entry.name)
+        colors.push(getRandomColor());
+        numOfTweets.push(entry.author_tweets)
+    });
+     myChart.config.data =  {
+        labels: _labels,
+        datasets: [{
+            label: '# of tweets',
+            data: numOfTweets,
+             backgroundColor: colors,
+            borderWidth: 1
+        }]
+    };
+
+    myChart.update();
+
+}
+
+
+$( "form" ).submit(function( event ) {
+    event.preventDefault();
+    data = {
+        "consumer_key":$('#consumer_key').val(),
+        "consumer_secret": $('#consumer_secret').val(),
+        "access_token": $('#access_token').val(),
+        "access_token_secret": $('#access_token_secret').val()
+    };
+     $.ajax({
+        url: '/twitter',
+        type: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        async: false,
+        success: function(msg) {
+            console.log(msg)
+            if (msg !== null) {
+                if (Array.isArray(msg)){
+                    dataToChart(msg);
+                }else{
+                    $("#errorMSG").removeClass("hidden");
+                }
+            }
+        }
+    });
+});
+
+    $('.message .close')
+  .on('click', function() {
+    $(this)
+      .closest('.message')
+      .transition('fade')
+    ;
+  })
+;
+
+
+
+
+</script>
+
+</body>
+</html>
